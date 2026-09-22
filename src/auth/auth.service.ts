@@ -2,10 +2,14 @@ import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/co
 import { UsersService } from '../users/users.service.js';
 import { CreateUserDto } from '../users/dto/create-user.dto.js';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly userService: UsersService) {}
+    constructor(
+        private readonly userService: UsersService,
+        private readonly jwtService: JwtService,
+    ) {}
 
     async register(createUserDto: CreateUserDto) {
         const existingUser = await this.userService.findByEmailOrPhone(createUserDto.email ,createUserDto.phone);
@@ -18,5 +22,29 @@ export class AuthService {
         }
 
         return this.userService.create(createUserDto)
+    }
+
+
+    async logIn(email: string, password: string) {
+        const user = await this.userService.findByEmail(email);
+        if (!user) {
+            throw new UnauthorizedException('Email ou mot de passe incorrect');
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.password)
+        if (!isPasswordCorrect) {
+            throw new UnauthorizedException('Email ou mot de passe incorrect');
+        }
+
+        const playload = {
+            sub: user.id,
+            email: user.email
+        }
+        const accessToken = await this.jwtService.signAsync(playload);
+
+        return {
+            accessToken
+        }
+
     }
 }
