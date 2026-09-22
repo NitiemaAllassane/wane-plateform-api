@@ -3,6 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { Prisma } from '../generated/prisma/client.js';
 
 
 const userSelect = {
@@ -51,11 +52,26 @@ export class UsersService {
     return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+   async update(id: string, updateUserDto: UpdateUserDto) {
+    await this.findOne(id);
+    const data: Prisma.UserUpdateInput = { ...updateUserDto }
+
+    if (updateUserDto.password) {
+      data.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
+
+    return this.prisma.user.update({
+      data,
+      where: {id},
+      select: userSelect
+    })
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    await this.findOne(id)
+    return this.prisma.user.delete({ 
+      where: { id },
+      select: userSelect
+    });
   }
 }
