@@ -25,6 +25,12 @@ export class UsersController {
     return this.usersService.findOne(req.user.sub)
   }
 
+  @UseGuards(AuthGuard)
+  @Patch('profil')
+  updateUserProfil(@Request() req: RequestWithUser,@Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(req.user.sub, updateUserDto);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
