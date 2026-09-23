@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
+import type { RequestWithUser } from '../types/types.js';
+import { AuthGuard } from '../auth/auth.guard.js';
 
 @Controller('users')
 export class UsersController {
@@ -15,6 +17,12 @@ export class UsersController {
   @Get()
   findAll() {
     return this.usersService.findAll();
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('profil')
+  getProfil(@Request() req: RequestWithUser) {
+    return this.usersService.findOne(req.user.sub)
   }
 
   @Get(':id')

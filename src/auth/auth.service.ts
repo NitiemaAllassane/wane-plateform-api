@@ -36,11 +36,11 @@ export class AuthService {
             throw new UnauthorizedException('Email ou mot de passe incorrect');
         }
 
-        const playload = {
+        const payload = {
             sub: user.id,
             email: user.email
         }
-        const accessToken = await this.jwtService.signAsync(playload);
+        const accessToken = await this.jwtService.signAsync(payload);
 
         return {
             accessToken
