@@ -11,8 +11,24 @@ export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Post('register')
-    register(@Body() dto: CreateUserDto) {
-        return this.authService.register(dto);
+    @HttpCode(201)
+    async register(@Body() dto: CreateUserDto, @Res({ passthrough: true }) res: Response) {
+        const { accessToken } = await this.authService.register(dto);
+
+        res.cookie(
+            'access_token', 
+            accessToken,
+            {
+                httpOnly: true,
+                secure: false,
+                maxAge: 24 * 60 * 60 * 1000,
+                sameSite: 'lax'
+            }
+        );
+
+        return {
+            message: "Inscription réussie"
+        }
     }
 
     @Post('login')

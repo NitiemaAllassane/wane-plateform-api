@@ -21,7 +21,8 @@ export class AuthService {
             throw new ConflictException(`Le numero ${createUserDto.phone} est déjà utilisé`);
         }
 
-        return this.userService.create(createUserDto)
+        await this.userService.create(createUserDto);
+        return this.logIn(createUserDto.email, createUserDto.password)
     }
 
 
